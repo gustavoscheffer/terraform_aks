@@ -9,6 +9,36 @@ locals {
   } 
 }
 
+
+# Create Backup structure
+
+## Create Resource Group for Backup
+resource "azurerm_resource_group" "backup_rg" {
+  name     = "mecha-buda-backup-rg-${var.environment}"
+  location = var.location
+  tags     = local.tags
+}
+
+## Create Storage Account for Backup
+resource "azurerm_storage_account" "backup_sa" {
+  name                     = "mechabudabackup${var.environment}"
+  resource_group_name      = azurerm_resource_group.backup_rg.name
+  location                 = var.location
+  account_tier             = "Standard"
+  account_replication_type = "LRS"
+  tags                     = local.tags
+}
+
+## Create Blob Container for Backup
+resource "azurerm_storage_container" "backup_container" {
+  name                  = "backup"
+  storage_account_name  = azurerm_storage_account.backup_sa.name
+  container_access_type = "private"
+}
+
+
+# Create AKS Cluster with ACR integration
+
 resource "azurerm_resource_group" "rg" {
   name     = "mecha-buda-rg-${var.environment}"
   location = var.location
